@@ -5,28 +5,40 @@ interface LoginProps {
     renderSignup: () => void;
 }
 
+interface APILoginResponse {
+    readonly title: string;
+    readonly token: string;
+}
+
 const Login = ({renderSignup}: LoginProps) => {
 
     const [username, setUsername] = React.useState("");
     const [password, setPassword] = React.useState("");
 
     const onSubmit = async () => {
+        const response = await axios.post<APILoginResponse>('http://localhost:5000/login', { username, password });
+        
+        if (response.status === 200) {
+            const token = response.data.token;
+            localStorage.setItem('token', token);
+        }
 
-        await axios.post('http://localhost:5000/login', {
-            username: username,
-            password: password,
-        }).then(response => {
+        // ALBO - nie mieszaj, async/await i Promise.then().catch() - bo po co.
 
-            if (response.status === 200) {
-                console.log(response.data);
-                console.log(response.data.token);
+        axios.post<APILoginResponse>('http://localhost:5000/login', { username, password })
+            .then(response => {
 
-                //const token = response.data.token;
-                //localStorage.setItem('token', token);
-            } else {
+                if (response.status === 200) {
+                    console.log(response.data);
+                    console.log(response.data.token);
 
-            }
-        }).catch(() => console.log('error'));
+                    const token = response.data.token;
+                    localStorage.setItem('token', token);
+                } else {
+
+                }
+            })
+            .catch(() => console.log('error'));
     };
 
     return (
